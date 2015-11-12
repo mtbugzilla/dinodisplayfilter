@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        Dino-RPG Display Filter
-// @version     0.4
+// @version     0.5
 // @description Affichage sélectif des dinoz pour Dino-RPG
 // @namespace   https://github.com/mtbugzilla/
 // @grant       none
@@ -91,7 +91,7 @@ function addInfoBox(listId) {
                     $(this).find('input').prop('checked', false);
                 }
             });
-            // not implemented
+            saveHiddenDinoz(listId);
         }
     });
     infobox.append(selectmenu);
