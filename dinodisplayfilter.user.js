@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        Dino-RPG Display Filter
-// @version     0.3
+// @version     0.4
 // @description Affichage sélectif des dinoz pour Dino-RPG
 // @namespace   https://github.com/mtbugzilla/
 // @grant       none
@@ -69,7 +69,7 @@ function addInfoBox(listId) {
     selectmenu.append('<option value="nop">' + TXT_OPT_NOP + '</option>');
     selectmenu.append('<option value="showall">' + TXT_OPT_ALL + '</option>');
     selectmenu.append('<option value="hideall">' + TXT_OPT_NONE + '</option>');
-//    selectmenu.append('<option value="frozen">' + TXT_OPT_FROZEN + '</option>');
+    selectmenu.append('<option value="frozen">' + TXT_OPT_FROZEN + '</option>');
     selectmenu.on('change', function () {
         var choice = $(this).val();
         if (choice === "showall") {
@@ -85,6 +85,12 @@ function addInfoBox(listId) {
             });
             saveHiddenDinoz(listId);
         } else if (choice === "frozen") {
+            $('.dinList li').each(function () {
+                if ($(this).find('embed').attr("flashvars").indexOf("congel") >= 0) {
+                    $(this).find('.swf').hide().parent().css("height", HEIGHT_HIDDEN);
+                    $(this).find('input').prop('checked', false);
+                }
+            });
             // not implemented
         }
     });
