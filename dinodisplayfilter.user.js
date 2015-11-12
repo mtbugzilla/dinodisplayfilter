@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        Dino-RPG Display Filter
-// @version     0.2
+// @version     0.3
 // @description Affichage sélectif des dinoz pour Dino-RPG
 // @namespace   https://github.com/mtbugzilla/
 // @grant       none
