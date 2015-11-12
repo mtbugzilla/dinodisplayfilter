@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name        Dino-RPG Display Filter
-// @version     0.1
+// @version     0.2
 // @description Affichage sélectif des dinoz pour Dino-RPG
 // @namespace   https://github.com/mtbugzilla/
 // @grant       none
 // @downloadURL https://github.com/mtbugzilla/dinodisplayfilter/raw/master/dinodisplayfilter.user.js
 // @copyright   2015, Bugzilla, badconker
+// @run-at      document-start
 // @include     http://www.dinorpg.com/user/*
 // ==/UserScript==
 //
@@ -50,8 +51,8 @@ function addInfoBox(listId) {
     TXT_OPT_ALL = "Montrer tous les dinoz";
     TXT_OPT_NONE = "Cacher tous les dinoz";
     TXT_OPT_FROZEN = "Cacher les dinos congelés";
-    var helpbox = $('<div>' + TXT_HELP + '</div>');
-    helpbox.css({ "width": "573px",
+    var infobox = $('<div>' + TXT_HELP + '</div>');
+    infobox.css({ "width": "573px",
                   "margin": "4px 0px 8px 0px",
                   "padding": "4px",
                   "border": "2px solid #52646b",
@@ -60,7 +61,7 @@ function addInfoBox(listId) {
                   "color": "#fff",
                   "font-size": "10pt"
                 });
-    helpbox.attr("title", "Script Dino-RPG Display Filter");
+    infobox.attr("title", "Script Dino-RPG Display Filter");
     var selectmenu = $('<select></select>');
     selectmenu.append('<option value="nop">' + TXT_OPT_NOP + '</option>');
     selectmenu.append('<option value="showall">' + TXT_OPT_ALL + '</option>');
@@ -84,16 +85,45 @@ function addInfoBox(listId) {
             // not implemented
         }
     });
-    helpbox.append(selectmenu);
-    $('#centerContent .user > table').after('<div class="clear"></div>').after(helpbox);
+    infobox.append(selectmenu);
+    $('#centerContent .user > table').after('<div class="clear"></div>').after(infobox);
 }
 
-function init() {
+var timer_ref = null;
+var list_id = null;
+
+function repeatHideUntilReady() {
+    // use plain Javascript as jQuery may not be available yet
+    localStorage.getItem(list_id).split(',').forEach(function(dinoId) {
+        var el = document.getElementById('swf_dino_' + dinoId);
+        if (el) {
+            el.style.display = "none";
+        }
+    });
+}
+
+function RunAtDocumentStart() {
     var userId = document.URL.substr(document.URL.lastIndexOf("/") + 1);
-    var listId = 'ddf_hide_' + userId;
-    addCheckBoxes(listId);
-    hideDinoz(listId);
-    addInfoBox(listId);
+    list_id = 'ddf_hide_' + userId;
+    if (localStorage.getItem(list_id)) {
+        repeatHideUntilReady();
+        timer_ref = setInterval(function(){ repeatHideUntilReady() }, 300);
+    }
 }
 
-init();
+function RunAtDocumentEnd() {
+    if (timer_ref != null) {
+        clearInterval(timer_ref);
+        timer_ref = null;
+    }
+    addCheckBoxes(list_id);
+    hideDinoz(list_id);
+    addInfoBox(list_id);
+}
+
+RunAtDocumentStart();
+if (document.readyState === "loading") {
+    document.addEventListener ("DOMContentLoaded", RunAtDocumentEnd);
+} else {
+    RunAtDocumentEnd();
+}
