@@ -11,6 +11,9 @@
 // ==/UserScript==
 //
 
+var HEIGHT_SHOWN = "175px";
+var HEIGHT_HIDDEN = "30px";
+
 function saveHiddenDinoz(listId) {
     localStorage.setItem(listId, $('.dinList input').map(function () {
         if (! $(this).prop('checked')) {
@@ -25,9 +28,9 @@ function addCheckBoxes(listId) {
         $input.val($(this).find('.swf').attr('id').replace("swf_dino_", ""));
         $input.on('change', function () {
             if ($(this).prop('checked')) {
-                $('#swf_dino_' + $(this).val()).show();
+                $('#swf_dino_' + $(this).val()).show().parent().css("height", HEIGHT_SHOWN);
             } else {
-                $('#swf_dino_' + $(this).val()).hide();
+                $('#swf_dino_' + $(this).val()).hide().parent().css("height", HEIGHT_HIDDEN);
             }
             saveHiddenDinoz(listId);
         });
@@ -39,7 +42,7 @@ function addCheckBoxes(listId) {
 function hideDinoz(listId) {
     if (localStorage.getItem(listId)) {
         localStorage.getItem(listId).split(',').forEach(function(dinoId) {
-            $('#swf_dino_' + dinoId).hide();
+            $('#swf_dino_' + dinoId).hide().parent().css("height", HEIGHT_HIDDEN);
             $('#swf_dino_' + dinoId).siblings('.name').find('input').prop('checked', false);
         });
     }
@@ -71,13 +74,13 @@ function addInfoBox(listId) {
         var choice = $(this).val();
         if (choice === "showall") {
             $('.dinList li').each(function () {
-                $(this).find('.swf').show();
+                $(this).find('.swf').show().parent().css("height", HEIGHT_SHOWN);
                 $(this).find('input').prop('checked', true);
             });
             saveHiddenDinoz(listId);
         } else if (choice === "hideall") {
             $('.dinList li').each(function () {
-                $(this).find('.swf').hide();
+                $(this).find('.swf').hide().parent().css("height", HEIGHT_HIDDEN);
                 $(this).find('input').prop('checked', false);
             });
             saveHiddenDinoz(listId);
@@ -90,35 +93,46 @@ function addInfoBox(listId) {
 }
 
 var timer_ref = null;
-var list_id = null;
-
-function repeatHideUntilReady() {
-    // use plain Javascript as jQuery may not be available yet
-    localStorage.getItem(list_id).split(',').forEach(function(dinoId) {
-        var el = document.getElementById('swf_dino_' + dinoId);
-        if (el) {
-            el.style.display = "none";
-        }
-    });
-}
 
 function RunAtDocumentStart() {
     var userId = document.URL.substr(document.URL.lastIndexOf("/") + 1);
-    list_id = 'ddf_hide_' + userId;
-    if (localStorage.getItem(list_id)) {
-        repeatHideUntilReady();
-        timer_ref = setInterval(function(){ repeatHideUntilReady() }, 300);
+    var listId = 'ddf_hide_' + userId;
+    if (localStorage.getItem(listId)) {
+        // use plain Javascript as jQuery may not be available yet
+        var hide_array = localStorage.getItem(listId).split(',').reverse();
+        var hide_func = function() {
+            var i = hide_array.length;
+            while (i--) {
+                var el = document.getElementById('swf_dino_' + hide_array[i]);
+                if (el) {
+                    el.style.display = "none";
+                    hide_array.splice(i, 1);
+                }
+            }
+        };
+        hide_func();
+        if ((hide_array.length > 0) && (document.readyState === "loading")) {
+            timer_ref = setInterval(function() {
+                hide_func();
+                if (document.readyState != "loading") {
+                    clearInterval(timer_ref);
+                    timer_ref = null;
+                }
+           }, 300);
+        }
     }
 }
 
 function RunAtDocumentEnd() {
+    var userId = document.URL.substr(document.URL.lastIndexOf("/") + 1);
+    var listId = 'ddf_hide_' + userId;
     if (timer_ref != null) {
         clearInterval(timer_ref);
         timer_ref = null;
     }
-    addCheckBoxes(list_id);
-    hideDinoz(list_id);
-    addInfoBox(list_id);
+    addCheckBoxes(listId);
+    hideDinoz(listId);
+    addInfoBox(listId);
 }
 
 RunAtDocumentStart();
