@@ -1,13 +1,16 @@
 // ==UserScript==
 // @name        Dino-RPG Display Filter
-// @version     0.5
-// @description Affichage sélectif des dinoz pour Dino-RPG
+// @description Selective display of the dinoz for the game Dino-RPG
+// @version     0.6
+// @author      Bugzilla @ Twinoid.fr
 // @namespace   https://github.com/mtbugzilla/
 // @grant       none
 // @downloadURL https://github.com/mtbugzilla/dinodisplayfilter/raw/master/dinodisplayfilter.user.js
-// @copyright   2015, Bugzilla, badconker
 // @run-at      document-start
 // @include     http://www.dinorpg.com/user/*
+// @include     http://en.dinorpg.com/user/*
+// @include     http://es.dinorpg.com/user/*
+// @include     http://www.dinorpg.de/user/*
 // ==/UserScript==
 //
 
@@ -48,12 +51,33 @@ function hideDinoz(listId) {
     }
 }
 
-function addInfoBox(listId) {
-    TXT_HELP = "Cliquez sur les cases à cocher situées à côté du nom des dinoz pour déterminer s'il doivent être affichés ou pas. Ou bien choisissez une de ces actions: ";
-    TXT_OPT_NOP = "(Ne rien changer)";
-    TXT_OPT_ALL = "Montrer tous les dinoz";
-    TXT_OPT_NONE = "Cacher tous les dinoz";
-    TXT_OPT_FROZEN = "Cacher les dinos congelés";
+function addInfoBox(listId, language) {
+    var TXT_HELP, TXT_OPT_NOP, TXT_OPT_ALL, TXT_OPT_NONE, TXT_OPT_FROZEN;
+    if (language === "fr") {
+        TXT_HELP = "Cliquez sur les cases à cocher situées à côté du nom des dinoz pour déterminer s'ils doivent être affichés ou pas. Ou bien choisissez une de ces actions : ";
+        TXT_OPT_NOP = "(Ne rien changer)";
+        TXT_OPT_ALL = "Montrer tous les dinoz";
+        TXT_OPT_NONE = "Cacher tous les dinoz";
+        TXT_OPT_FROZEN = "Cacher les dinos congelés";
+    } else if (language === "es") {
+        TXT_HELP = "Haga clic en las casillas de verificación junto a los nombres de los dinoz para determinar si se deben mostrar o no. O elegir una de estas acciones:";
+        TXT_OPT_NOP = "(No hacer nada)";
+        TXT_OPT_ALL = "Mostrar todos los dinoz";
+        TXT_OPT_NONE = "Ocultar todos los dinoz";
+        TXT_OPT_FROZEN = "Ocultar dinoz congelados";
+    } else if (language === "de") {
+        TXT_HELP = "Klicken Sie auf die Kontrollkästchen neben den Namen der Dinoz, um festzustellen, ob sie angezeigt werden oder nicht. Oder wählen Sie eine der folgenden Aktionen:";
+        TXT_OPT_NOP = "(Nichts)";
+        TXT_OPT_ALL = "Zeige alle Dinoz";
+        TXT_OPT_NONE = "Hide all die Dinoz";
+        TXT_OPT_FROZEN = "Hide gefrorenen Dinoz";
+    } else {
+        TXT_HELP = "Click on the check boxes located next to the name of your dinoz to determine whether they should be displayed or not.  Or pick one of these actions: ";
+        TXT_OPT_NOP = "(Do nothing)";
+        TXT_OPT_ALL = "Display all dinoz";
+        TXT_OPT_NONE = "Hide all dinoz";
+        TXT_OPT_FROZEN = "Hide frozen dinoz";
+    }
     var infobox = $('<div>' + TXT_HELP + '</div>');
     infobox.css({ "width": "573px",
                   "margin": "4px 0px 8px 0px",
@@ -136,9 +160,17 @@ function RunAtDocumentEnd() {
         clearInterval(timer_ref);
         timer_ref = null;
     }
+    var language = "en";
+    if (document.location.host === "www.dinorpg.com") {
+        language = "fr";
+    } else if (document.location.host === "es.dinorpg.com") {
+        language = "es";
+    } else if (document.location.host === "es.dinorpg.com") {
+        language = "de";
+    }
     addCheckBoxes(listId);
     hideDinoz(listId);
-    addInfoBox(listId);
+    addInfoBox(listId, language);
 }
 
 RunAtDocumentStart();
